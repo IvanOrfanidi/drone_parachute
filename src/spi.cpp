@@ -2,11 +2,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/const.h>
-#include <linux/ioctl.h>
-#include <linux/spi/spidev.h>
 #include <linux/types.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -33,7 +29,16 @@ SPI::SPI(const std::string& device)
 {
 }
 
-std::string SPI::getNameDevice() const
+SPI::~SPI()
+{
+    clearAll();
+}
+
+void SPI::clearAll()
+{
+}
+
+std::string SPI::getDevice() const noexcept
 {
     return _device;
 }
@@ -57,9 +62,7 @@ void SPI::open()
 void SPI::open(const SPI::Config& config)
 {
     open();
-
-    setSpeed(config.speed);
-    _config = config;
+    setConfig(config);
 }
 
 void SPI::close()
@@ -72,10 +75,38 @@ void SPI::close()
     }
 }
 
+SPI::Config SPI::getConfig() const noexcept
+{
+    return _config;
+}
+
+void SPI::setConfig(const Config& config)
+{
+    setMode(config.mode);
+    setBitPerWord(config.bitPerWord);
+    setSpeed(config.speed);
+}
+
 void SPI::setSpeed(uint32_t speed)
 {
     if (ioctl(_spi, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0 || ioctl(_spi, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0) {
         throw std::runtime_error("can't set max speed hz");
     }
     _config.speed = speed;
+}
+
+void SPI::setBitPerWord(uint8_t bitPerWord)
+{
+    if (ioctl(_spi, SPI_IOC_WR_BITS_PER_WORD, &bitPerWord) < 0 || ioctl(_spi, SPI_IOC_RD_BITS_PER_WORD, &bitPerWord) < 0) {
+        throw std::runtime_error("can't set bits per word");
+    }
+    _config.bitPerWord = bitPerWord;
+}
+
+void SPI::setMode(uint32_t mode)
+{
+    if (ioctl(_spi, SPI_IOC_WR_MODE, &mode) < 0 || ioctl(_spi, SPI_IOC_RD_MODE, &mode) < 0) {
+        throw std::runtime_error("can't set spi mode");
+    }
+    _config.mode = mode;
 }
