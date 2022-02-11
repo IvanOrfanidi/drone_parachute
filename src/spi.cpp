@@ -13,7 +13,8 @@
 
 extern int errno;
 
-[[nodiscard]] std::shared_ptr<SPI> SPI::instance(const std::string& device) {
+[[nodiscard]] SPI& SPI::instance(const std::string& device)
+{
     if (device.empty()) {
         throw std::runtime_error("device name cannot be empty");
     }
@@ -23,27 +24,13 @@ extern int errno;
         _interfaces[device] = new SPI(device);
     }
 
-    return std::shared_ptr<SPI>{ _interfaces[device] };
+    return *_interfaces[device];
 }
 
 SPI::SPI(const std::string& device)
     : _device(device)
     , _spi(CLOSE)
 {
-}
-
-SPI::~SPI()
-{
-    // const auto itDevice = _interfaces.find(_device);
-    // if (itDevice != _interfaces.end()) {
-    //     bool error = false;
-    //     if (isOpened()) {
-    //         error = (::close(_spi) < 0);
-    //     }
-    //     if (!error) {
-    //         _interfaces.erase(_device);
-    //     }
-    // }
 }
 
 std::string SPI::getNameDevice() const

@@ -10,7 +10,7 @@ public:
         uint32_t speed;
     };
 
-    [[nodiscard]] static std::shared_ptr<SPI> instance(const std::string& device);
+    [[nodiscard]] static SPI& instance(const std::string& device);
 
     std::string getNameDevice() const;
     bool isOpened() const noexcept;
@@ -21,8 +21,6 @@ public:
 
     void setSpeed(uint32_t speed);
     bool setBitPerWord(uint8_t p_bit);
-
-    ~SPI();
 
 private:
     static constexpr int CLOSE = -1;
