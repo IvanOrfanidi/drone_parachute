@@ -3,6 +3,7 @@
 #include <linux/const.h>
 #include <linux/spi/spidev.h>
 #include <map>
+#include <memory>
 #include <string>
 
 class SPI {
@@ -26,12 +27,18 @@ public:
     };
 
     struct Config {
-        uint32_t mode;
-        uint8_t bitPerWord;
-        uint32_t speed;
+        uint32_t mode = 0;
+        uint8_t bitPerWord = 8;
+        uint32_t speed = 1'000'000;
     };
 
-    [[nodiscard]] static SPI& instance(const std::string& device);
+    [[nodiscard]] static std::shared_ptr<SPI> getInstance(const std::string& device);
+    ~SPI();
+
+    SPI(const SPI& other) = default;
+    SPI& operator=(const SPI& other) = default;
+    SPI(SPI&& other) = default;
+    SPI& operator=(SPI&& other) = default;
 
     std::string getDevice() const noexcept;
     bool isOpened() const noexcept;
@@ -46,18 +53,13 @@ public:
     void setBitPerWord(uint8_t bits);
     void setMode(uint32_t mode);
 
-    static void clearAll();
-
-    ~SPI();
-
 private:
     static constexpr int CLOSE = -1;
 
-    SPI(const std::string& device);
+    explicit SPI(const std::string& device);
 
     std::string _device;
-    Config _config;
     int _spi;
-
-    inline static std::map<std::string, SPI*> _interfaces;
+    Config _config;
+    inline static std::map<std::string, std::shared_ptr<SPI>> _interfaces;
 };

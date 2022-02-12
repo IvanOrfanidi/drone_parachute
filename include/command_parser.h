@@ -8,7 +8,9 @@ public:
     explicit CommandParser(int argc, char* argv[]);
 
     std::string getDevice() const noexcept;
+
     SPI::Config getConfig() const noexcept;
+
     std::string getMessage() const noexcept;
 
 private:

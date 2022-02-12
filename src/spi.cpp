@@ -2,40 +2,38 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/types.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 extern int errno;
 
-[[nodiscard]] SPI& SPI::instance(const std::string& device)
+[[nodiscard]] std::shared_ptr<SPI> SPI::getInstance(const std::string& device)
 {
     if (device.empty()) {
         throw std::runtime_error("device name cannot be empty");
     }
 
-    const auto itDevice = _interfaces.find(device);
-    if (itDevice == _interfaces.end()) {
-        _interfaces[device] = new SPI(device);
+    const auto itInterface = _interfaces.find(device);
+    if (itInterface == _interfaces.end()) {
+        _interfaces[device] = std::shared_ptr<SPI>(new SPI(device));
     }
-
-    return *_interfaces[device];
+    return _interfaces[device];
 }
 
 SPI::SPI(const std::string& device)
     : _device(device)
     , _spi(CLOSE)
+    , _config({})
 {
 }
 
 SPI::~SPI()
 {
-    clearAll();
-}
-
-void SPI::clearAll()
-{
+    if (isOpened()) {
+        ::close(_spi);
+    }
 }
 
 std::string SPI::getDevice() const noexcept
@@ -45,7 +43,7 @@ std::string SPI::getDevice() const noexcept
 
 bool SPI::isOpened() const noexcept
 {
-    return !(_spi <= CLOSE);
+    return _spi > CLOSE;
 }
 
 void SPI::open()
