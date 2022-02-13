@@ -8,7 +8,7 @@
 
 class SPI {
 public:
-    enum Mode {
+    enum Mode : uint32_t {
         TX_OCTAL = _BITUL(13),
         TX_QUAD = SPI_TX_QUAD,
         TX_DUAL = SPI_TX_DUAL,

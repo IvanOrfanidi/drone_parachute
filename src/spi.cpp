@@ -11,12 +11,7 @@ extern int errno;
 
 [[nodiscard]] std::shared_ptr<SPI> SPI::getInstance(const std::string& device)
 {
-    if (device.empty()) {
-        throw std::runtime_error("device name cannot be empty");
-    }
-
-    const auto itInterface = _interfaces.find(device);
-    if (itInterface == _interfaces.end()) {
+    if (_interfaces.find(device) == _interfaces.end()) {
         _interfaces[device] = std::shared_ptr<SPI>(new SPI(device));
     }
     return _interfaces[device];
@@ -51,9 +46,8 @@ void SPI::open()
     if (!isOpened()) {
         _spi = ::open(_device.data(), O_RDWR);
         if (_spi < 0) {
-            //throw std::runtime_error(std::string("can't open spi device. error is ") + strerror(errno));
+            throw std::runtime_error(std::string("can't open spi device. error is ") + strerror(errno));
         }
-        _spi = 1;
     }
 }
 
@@ -67,9 +61,8 @@ void SPI::close()
 {
     if (isOpened()) {
         if (::close(_spi) < 0) {
-            //throw std::runtime_error(std::string("can't close spi device. error is ") + strerror(errno));
+            throw std::runtime_error(std::string("can't close spi device. error is ") + strerror(errno));
         }
-        _spi = CLOSE;
     }
 }
 
